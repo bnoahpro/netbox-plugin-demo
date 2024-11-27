@@ -1,15 +1,19 @@
 from netbox.forms import NetBoxModelForm
-from netbox_dhcp.models import MacAddress
+from netbox_dhcp.models import DHCPReservation, DHCPServer
 
-
-
-class MacAddressEditForm(NetBoxModelForm):
+class DHCPReservationEditForm(NetBoxModelForm):
     class Meta:
-        model = MacAddress
-        fields = ['mac_address', 'ip_address']
-
+        model = DHCPReservation
+        fields = ['mac_address', 'ip_address', 'dhcpserver']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['ip_address'].disabled = True #To fix
+
+class DHCPServerEditForm(NetBoxModelForm):
+    class Meta:
+        model = DHCPServer
+        fields = ['name', 'api_token', 'api_url', 'ssl_verify']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
