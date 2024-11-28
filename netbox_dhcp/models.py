@@ -1,5 +1,7 @@
 from django.db import models
 from django.urls import reverse
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 from netbox.models import NetBoxModel
 from ipam.models import IPAddress, Prefix
 
@@ -28,19 +30,28 @@ class DHCPReservation(NetBoxModel):
     )
     mac_address = models.CharField(
         max_length=17,
-        unique=True
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$',
+                message = _('Enter a valid MAC Addres like a1:b2:c3:d4:e5:f6.')
+            )
+        ],
     )
     status = models.CharField(
         max_length=17,
         default='inactive',
     )
-    dhcpserver = models.ForeignKey(
+    dhcp_server = models.ForeignKey(
         to=DHCPServer,
         verbose_name='DHCP Server',
         on_delete=models.CASCADE,
     )
     class Meta:
         ordering = ('ip_address', 'mac_address')
+
+    def get_absolute_url(self):
+        return self.ip_address.get_absolute_url()
 
     def __str__(self):
         return f'{self.ip_address} {self.mac_address}'

@@ -1,10 +1,11 @@
 from netbox.api.routers import NetBoxRouter
-from . import views
+from netbox_dhcp.api.views import DHCPServerViewSet, DHCPReservationViewSet
 
 
 app_name = 'netbox_dhcp'
 
 router = NetBoxRouter()
-router.register('dchpserver', views.DHCPServerViewSet)
+router.register('server', DHCPServerViewSet)
+router.register('reservation', DHCPReservationViewSet)
 
 urlpatterns = router.urls

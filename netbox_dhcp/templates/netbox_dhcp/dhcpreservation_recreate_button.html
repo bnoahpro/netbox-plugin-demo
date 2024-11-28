@@ -1,3 +1,4 @@
+{% if object.dhcpreservation %}
 <form method="post" class="inline-block">
     {% csrf_token %}
     <button type="submit" name="_edit"
@@ -6,3 +7,4 @@
         <span class="mdi mdi-refresh" aria-hidden="true">Trigger DHCP</span>
     </button>
 </form>
+{% endif %}

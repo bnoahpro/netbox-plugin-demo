@@ -19,13 +19,4 @@ class DHCPReservationSerializer(NetBoxModelSerializer):
 class DHCPServerSerializer(NetBoxModelSerializer):
     class Meta:
         model = DHCPServer
-        fields = (
-            'id',
-            'name',
-            'display',
-            'api_token',
-            'api_url',
-            'tags',
-            'created',
-            'last_updated',
-        )
+        fields = ('__all__')

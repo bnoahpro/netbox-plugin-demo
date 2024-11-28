@@ -4,16 +4,15 @@ from netbox_dhcp.models import DHCPReservation, DHCPServer
 class DHCPReservationEditForm(NetBoxModelForm):
     class Meta:
         model = DHCPReservation
-        fields = ['mac_address', 'ip_address', 'dhcpserver']
+        fields = ['mac_address', 'ip_address', 'dhcp_server']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class DHCPReservationEditFormIPAddress(NetBoxModelForm):
+    class Meta:
+        model = DHCPReservation
+        fields = ['mac_address', 'dhcp_server']
 
 class DHCPServerEditForm(NetBoxModelForm):
     class Meta:
         model = DHCPServer
         fields = ['name', 'api_token', 'api_url', 'ssl_verify']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 

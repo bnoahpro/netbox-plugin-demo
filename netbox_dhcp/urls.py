@@ -1,6 +1,6 @@
 from django.urls import path
 
-from netbox_dhcp.views import DHCPReservationRecreateView, DHCPReservationCreateView, DHCPReservationEditView, DHCPReservationDeleteView, SynchronizeDHCP, DHCPServerListView, DHCPServerView, DHCPServerEditView, DHCPServerDeleteView
+from netbox_dhcp.views import DHCPReservationRecreateView, DHCPReservationCreateView, DHCPReservationEditView, DHCPReservationDeleteView, SynchronizeDHCP, DHCPServerListView, DHCPServerView, DHCPServerEditView, DHCPServerDeleteView, DHCPReservationCreateViewIPAddress
 from netbox_dhcp.models import DHCPServer, DHCPReservation
 from netbox.views.generic import ObjectChangeLogView
 
@@ -9,6 +9,9 @@ urlpatterns = [
     path(route='<int:ip_address_id>/recreate',
          view=DHCPReservationRecreateView.as_view(),
          name='dhcpreservation_recreate'),
+    path(route='<int:ip_address_id>/create',
+         view=DHCPReservationCreateViewIPAddress.as_view(),
+         name='dhcpreservation_create_ipaddress'),
     path(route='dhcpreservation/create',
          view=DHCPReservationCreateView.as_view(),
          name='dhcpreservation_create'),
@@ -45,9 +48,9 @@ urlpatterns = [
          kwargs={'model': DHCPServer}),
 
     ##### Synchronization
-    path(route='<int:prefix_id>/synchonize',
+    path(route='dhcpserver/<int:pk>/synchonize',
          view=SynchronizeDHCP.as_view(),
-         name='synchonize_dhcp'),
+         name='dhcpserver_synchronize'),
 ]
 
 

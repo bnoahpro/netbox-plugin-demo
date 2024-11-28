@@ -1,6 +1,5 @@
-from psycopg.types.net import ip_address
 from logging import getLogger
-from ipam.models import IPAddress, Prefix
+from ipam.models import IPAddress
 from netbox_dhcp.models import DHCPReservation, DHCPServer
 from django_rq import job
 from requests import post, put, delete
@@ -10,8 +9,8 @@ logger = getLogger('netbox_dhcp')
 @job
 def create_or_update_reservation(dhcpreservation: DHCPReservation):
     ip_address = dhcpreservation.ip_address
-    dhcp_server = dhcpreservation.dhcpserver
-    reservation_conf = {'netbox_id': ip_address.id,'mac': dhcpreservation.macaddress, 'ip': {str(ip_address)}, 'hostname_fqdn': ip_address.dns_name}
+    dhcp_server = dhcpreservation.dhcp_server
+    reservation_conf = {'netbox_id': ip_address.id,'mac': dhcpreservation.mac_address, 'ip': str(ip_address), 'hostname_fqdn': ip_address.dns_name}
     if dhcpreservation == "active":
         response = put(f'{dhcp_server.api_url}/api/reservation/{ip_address.id}/',
                        headers={'Authorization': f"Token {dhcp_server.api_token}"},
@@ -29,8 +28,8 @@ def create_or_update_reservation(dhcpreservation: DHCPReservation):
 
 @job
 def delete_reservation(dhcpreservation: DHCPReservation):
-    ip_prefix = dhcpreservation.ip_address
-    dhcp_server = dhcpreservation.dhcpserver
+    ip_address = dhcpreservation.ip_address
+    dhcp_server = dhcpreservation.dhcp_server
     response = delete(f'{dhcp_server.api_url}/api/reservation/{ip_address.id}/',
                       headers={'Authorization': f"Token {dhcp_server.api_token}"},
                       verify=dhcp_server.ssl_verify)
@@ -42,6 +41,12 @@ def delete_reservation(dhcpreservation: DHCPReservation):
 
 @job
 def delete_reservation_in_dhcp(ids_to_delete: list(), dhcp_server: DHCPServer):
+    """
+    Function that delete all reservations in DHCP server if their netbox_id is not in Netbox
+
+    ids_to_delete: list of reservations to delete in DHCP server
+    dhcp_server: DHCPServer object to target
+    """
     for id in ids_to_delete:
         response = delete(f'{dhcp_server.api_url}/api/reservation/{id}/',
                           headers={'Authorization': f"Token {dhcp_server.api_token}"},
