@@ -20,7 +20,7 @@
         <div class="card">
             <div class="justify-content-between card-header">
                 <h1 class="card-title">Reservations</h1>
-                <a class="btn btn-success" href="{% url 'plugins:netbox_dhcp:dhcpreservation_create' %}">
+                <a class="btn btn-success" href="{% url 'plugins:netbox_dhcp:dhcpreservation_create' dhcp_server_id=object.pk %}">
             <span class="mdi mdi-plus" aria-hidden="true">Add
             </span>
                 </a>

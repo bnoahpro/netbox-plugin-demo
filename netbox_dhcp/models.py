@@ -27,12 +27,13 @@ class DHCPServer(NetBoxModel):
 
 
 class DHCPReservation(NetBoxModel):
+
     ip_address = models.OneToOneField(
         to=IPAddress,
         verbose_name='IP Address',
         on_delete=models.CASCADE,
     )
-    mac_address = models.CharField(
+    mac_address = models.CharField( #TO SET UNIQUE INSENSITIVE
         max_length=17,
         unique=True,
         validators=[
@@ -53,6 +54,13 @@ class DHCPReservation(NetBoxModel):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['mac_address'],
+                name='unique_mac_address_case_insensitive',
+                condition=models.Q(mac_address__iexact=models.functions.Upper('mac_address'))
+            )
+        ]
         ordering = ('ip_address', 'mac_address')
 
     def get_absolute_url(self):

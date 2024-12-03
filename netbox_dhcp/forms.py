@@ -5,7 +5,7 @@ from netbox_dhcp.models import DHCPReservation, DHCPServer
 class DHCPReservationEditForm(NetBoxModelForm):
     class Meta:
         model = DHCPReservation
-        fields = ['mac_address', 'ip_address', 'dhcp_server']
+        fields = ['mac_address', 'ip_address']
 
 
 class DHCPReservationEditFormIPAddress(NetBoxModelForm):

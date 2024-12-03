@@ -33,7 +33,7 @@
 
                             <dt class="col-sm-3 text-nowrap">DHCP Server</dt>
                             <dd class="col-sm-9 text-nowrap">
-                                <a href="{{ object.dhcp_reservation.dhcpserver.get_absolute_url }}">
+                                <a href="{% url 'plugins:netbox_dhcp:dhcpserver' pk=object.dhcpreservation.dhcp_server.id %}">
                                     {{ object.dhcpreservation.dhcp_server }}
                                 </a>
                             </dd>

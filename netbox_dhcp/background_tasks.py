@@ -2,7 +2,10 @@ from logging import getLogger
 from ipam.models import IPAddress
 from netbox_dhcp.models import DHCPReservation, DHCPServer
 from django_rq import job
-from requests import post, put, delete
+from requests import post, put, delete, get, Session
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+from time import sleep
 
 logger = getLogger('netbox_dhcp')
 
@@ -13,7 +16,7 @@ def create_or_update_reservation(dhcp_reservation: DHCPReservation):
     dhcp_server = dhcp_reservation.dhcp_server
     reservation_conf = {'netbox_id': ip_address.id, 'mac': dhcp_reservation.mac_address, 'ip': str(ip_address),
                         'hostname_fqdn': ip_address.dns_name}
-    if dhcp_reservation == "active":
+    if dhcp_reservation.status == "active":
         response = put(f'{dhcp_server.api_url}/api/reservation/{ip_address.id}/',
                        headers={'Authorization': f"Token {dhcp_server.api_token}"},
                        json=reservation_conf,
@@ -26,7 +29,19 @@ def create_or_update_reservation(dhcp_reservation: DHCPReservation):
     if not response.ok:
         logger.debug(f"response.json: {response}")
     logger.debug(f"data_results: {response}")
-    return True
+
+    s = Session()
+    retries = Retry(total=5,
+                    backoff_factor=1,
+                    status_forcelist=[])
+    s.mount('http://', HTTPAdapter(max_retries=retries))
+    feedback = s.get(f'{dhcp_server.api_url}/api/reservation/{ip_address.id}/',
+                    headers={'Authorization': f"Token {dhcp_server.api_token}"},
+                    verify=dhcp_server.ssl_verify)
+    data = feedback.json()
+    if data['is_celery_task_succeed']:
+        DHCPReservation.objects.filter(pk=dhcp_reservation.id).update(status = 'active')
+    return data['is_celery_task_succeed']
 
 
 @job

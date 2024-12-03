@@ -38,6 +38,9 @@ class DHCPReservationCreateView(PermissionRequiredMixin, ObjectEditView):
     queryset = DHCPReservation.objects.all()
     form = DHCPReservationEditForm
 
+    def get_object(self, *args, **kwargs):
+        dhcp_server = get_object_or_404(DHCPServer, pk=kwargs['dhcp_server_id'])
+        return DHCPReservation(dhcp_server=dhcp_server)
 
 class DHCPReservationEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
@@ -120,10 +123,10 @@ class SynchronizeDHCP(PermissionRequiredMixin, View):
         dhcp_server = DHCPServer.objects.get(pk=pk)
         all_dhcp_reservations = dhcp_server.dhcpreservation_set.all()
         all_ip_addresses_id = list(all_dhcp_reservations.values_list('ip_address', flat=True))
-        for dhcp_reservation in all_dhcp_reservations: v
-        create_or_update_reservation.delay(
-            dhcp_reservation=dhcp_reservation
-        )
+        for dhcp_reservation in all_dhcp_reservations:
+            create_or_update_reservation.delay(
+                dhcp_reservation=dhcp_reservation
+            )
 
         response_all_reservations_from_dhcp = get(f'{dhcp_server.api_url}/api/reservation/',
                                                   headers={'Authorization': f"Token {dhcp_server.api_token}"},
