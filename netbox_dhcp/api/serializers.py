@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from netbox.api.serializers import NetBoxModelSerializer
-from ..models import DHCPReservation, DHCPServer
+from netbox_dhcp.models import DHCPReservation, DHCPServer
 
 class DHCPReservationSerializer(NetBoxModelSerializer):
     class Meta:
@@ -19,4 +19,13 @@ class DHCPReservationSerializer(NetBoxModelSerializer):
 class DHCPServerSerializer(NetBoxModelSerializer):
     class Meta:
         model = DHCPServer
-        fields = ('__all__')
+        fields = (
+            'id',
+            'name',
+            'display',
+            'api_token',
+            'api_url',
+            'tags',
+            'created',
+            'last_updated',
+        )

@@ -9,7 +9,8 @@ class ReservationInfo(PluginTemplateExtension):
 
     def right_page(self):
         return (
-            self.render('netbox_dhcp/dhcpreservation.html')
+            self.render('netbox_dhcp/dhcp_reservation.html')
         )
+
 
 template_extensions = [ReservationInfo]

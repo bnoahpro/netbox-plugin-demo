@@ -1,7 +1,6 @@
 from netbox.api.routers import NetBoxRouter
 from netbox_dhcp.api.views import DHCPServerViewSet, DHCPReservationViewSet
 
-
 app_name = 'netbox_dhcp'
 
 router = NetBoxRouter()

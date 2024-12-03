@@ -3,15 +3,17 @@ from django.dispatch import receiver
 from netbox_dhcp.models import DHCPReservation
 from netbox_dhcp.background_tasks import create_or_update_reservation, delete_reservation
 
+
 @receiver(post_save, sender=DHCPReservation)
 def trigger_create_or_update_reservation(instance: DHCPReservation, **_kwargs):
     create_or_update_reservation.delay(
-        dhcpreservation=instance
+        dhcp_reservation=instance
     )
+
 
 @receiver(post_delete, sender=DHCPReservation)
 def trigger_delete_reservation(instance: DHCPReservation, **_kwargs):
     if instance.status == 'active':
         delete_reservation.delay(
-            dhcpreservation=instance
+            dhcp_reservation=instance
         )

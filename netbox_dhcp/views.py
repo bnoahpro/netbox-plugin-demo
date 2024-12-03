@@ -14,11 +14,14 @@ from logging import getLogger
 
 logger = getLogger('netbox_dhcp')
 
+
 # ---------------------------- #
 #       DHCPReservation
 # ---------------------------- #
+
 class DHCPReservationView(ObjectView):
     queryset = DHCPReservation.objects.all()
+
 
 class DHCPReservationCreateViewIPAddress(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
@@ -29,15 +32,18 @@ class DHCPReservationCreateViewIPAddress(PermissionRequiredMixin, ObjectEditView
         ip_address = get_object_or_404(IPAddress, pk=kwargs['ip_address_id'])
         return DHCPReservation(ip_address=ip_address)
 
+
 class DHCPReservationCreateView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPReservation.objects.all()
     form = DHCPReservationEditForm
 
+
 class DHCPReservationEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPReservation.objects.all()
     form = DHCPReservationEditFormIPAddress
+
 
 class DHCPReservationDeleteView(PermissionRequiredMixin, ObjectDeleteView):
     permission_required = 'ipam.change_ipaddress'
@@ -45,7 +51,7 @@ class DHCPReservationDeleteView(PermissionRequiredMixin, ObjectDeleteView):
 
     def delete(self, request, ip_address_id):
         ip_address = get_object_or_404(IPAddress, pk=ip_address_id)
-        if hasattr(ip_address, 'dhcpreservation') and ip_address.dhcpreservation.is_reserved:
+        if hasattr(ip_address, 'dhcp_reservation') and ip_address.dhcp_reservation.is_reserved:
             delete_reservation.delay(
                 ip_address=ip_address
             )
@@ -55,6 +61,7 @@ class DHCPReservationDeleteView(PermissionRequiredMixin, ObjectDeleteView):
         if obj and obj.ip_address:
             return obj.ip_address.get_absolute_url()
         return super().get_return_url(request, obj)
+
 
 class DHCPReservationRecreateView(PermissionRequiredMixin, View):
     permission_required = 'ipam.change_ipaddress'
@@ -79,20 +86,23 @@ class DHCPServerView(ObjectView):
         table.configure(request)
 
         return {
-            'dhcpreservation_table': table,
+            'dhcp_reservation_table': table,
         }
 
     def get_absolute_url(self):
         return redirect(dhcp_server.get_absolute_url())
 
+
 class DHCPServerListView(ObjectListView):
     queryset = DHCPServer.objects.all()
     table = DHCPServerTable
+
 
 class DHCPServerEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPServer.objects.all()
     form = DHCPServerEditForm
+
 
 class DHCPServerDeleteView(PermissionRequiredMixin, ObjectDeleteView):
     permission_required = 'ipam.change_ipaddress'
@@ -108,19 +118,20 @@ class SynchronizeDHCP(PermissionRequiredMixin, View):
 
     def post(self, request, pk):
         dhcp_server = DHCPServer.objects.get(pk=pk)
-        all_dhcpreservations = dhcp_server.dhcpreservation_set.all()
-        all_ip_addresses_id = list(all_dhcpreservations.values_list('ip_address',flat=True))
-        for dhcpreservation in all_dhcpreservations:
-            create_or_update_reservation.delay(
-                dhcpreservation=dhcpreservation
-            )
+        all_dhcp_reservations = dhcp_server.dhcpreservation_set.all()
+        all_ip_addresses_id = list(all_dhcp_reservations.values_list('ip_address', flat=True))
+        for dhcp_reservation in all_dhcp_reservations: v
+        create_or_update_reservation.delay(
+            dhcp_reservation=dhcp_reservation
+        )
+
         response_all_reservations_from_dhcp = get(f'{dhcp_server.api_url}/api/reservation/',
-                                        headers={'Authorization': f"Token {dhcp_server.api_token}"},
-                                        verify=dhcp_server.ssl_verify)
+                                                  headers={'Authorization': f"Token {dhcp_server.api_token}"},
+                                                  verify=dhcp_server.ssl_verify)
         if response_all_reservations_from_dhcp.ok:
             data_all_reservations_from_dhcp = response_all_reservations_from_dhcp.json()
-            reservations_ids_from_dhcp = [ reservation['netbox_id'] for reservation in data_all_reservations_from_dhcp ]
-            reservations_ids_to_delete = [ id for id in reservations_ids_from_dhcp if id not in all_ip_addresses_id ]
+            reservations_ids_from_dhcp = [reservation['netbox_id'] for reservation in data_all_reservations_from_dhcp]
+            reservations_ids_to_delete = [id for id in reservations_ids_from_dhcp if id not in all_ip_addresses_id]
             delete_reservation_in_dhcp.delay(
                 ids_to_delete=reservations_ids_to_delete,
                 dhcp_server=dhcp_server
