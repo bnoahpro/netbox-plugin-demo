@@ -6,16 +6,32 @@ from netbox.models import NetBoxModel
 from ipam.models import IPAddress, Prefix
 
 
+
+class UpperCharField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        super(UpperCharField, self).__init__(*args, **kwargs)
+
+    def get_prep_value(self, value):
+        return value.upper()
+
+
 class DHCPServer(NetBoxModel):
+
+    class Meta(NetBoxModel.Meta):
+        verbose_name = "DHCP server"
+        verbose_name_plural = "DHCP servers"
+
     name = models.CharField(
         unique=True,
     )
-    api_token = models.CharField()
+    api_token = models.CharField(
+        verbose_name="API token",
+    )
     api_url = models.URLField(
-        unique=True,
+        verbose_name="API URL",
     )
     ssl_verify = models.BooleanField(
-        verbose_name='SSL Verify',
+        verbose_name='SSL verify',
         default=True
     )
 
@@ -27,15 +43,18 @@ class DHCPServer(NetBoxModel):
 
 
 class DHCPReservation(NetBoxModel):
+    class Meta(NetBoxModel.Meta):
+        verbose_name = "DHCP reservation"
 
     ip_address = models.OneToOneField(
         to=IPAddress,
         verbose_name='IP Address',
         on_delete=models.CASCADE,
     )
-    mac_address = models.CharField( #TO SET UNIQUE INSENSITIVE
+    mac_address = UpperCharField(
         max_length=17,
         unique=True,
+        verbose_name='MAC Address',
         validators=[
             RegexValidator(
                 regex=r'^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$',
@@ -45,22 +64,15 @@ class DHCPReservation(NetBoxModel):
     )
     status = models.CharField(
         max_length=17,
-        default='inactive',
+        default='pending',
     )
     dhcp_server = models.ForeignKey(
         to=DHCPServer,
-        verbose_name='DHCP Server',
+        verbose_name='DHCP server',
         on_delete=models.CASCADE,
     )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['mac_address'],
-                name='unique_mac_address_case_insensitive',
-                condition=models.Q(mac_address__iexact=models.functions.Upper('mac_address'))
-            )
-        ]
         ordering = ('ip_address', 'mac_address')
 
     def get_absolute_url(self):

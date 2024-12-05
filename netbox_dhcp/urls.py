@@ -1,6 +1,6 @@
 from django.urls import path
 
-from netbox_dhcp.views import DHCPReservationRecreateView, DHCPReservationCreateView, DHCPReservationEditView, DHCPReservationDeleteView, SynchronizeDHCP, DHCPServerListView, DHCPServerView, DHCPServerEditView, DHCPServerDeleteView, DHCPReservationCreateViewIPAddress
+from netbox_dhcp.views import DHCPReservationRecreateView, DHCPReservationCreateViewIPAddress, DHCPReservationEditView, DHCPReservationDeleteView, SynchronizeDHCP, DHCPServerListView, DHCPServerView, DHCPServerEditView, DHCPServerDeleteView, DHCPReservationCreateViewDHCPServer
 from netbox_dhcp.models import DHCPServer, DHCPReservation
 from netbox.views.generic import ObjectChangeLogView
 
@@ -13,7 +13,7 @@ urlpatterns = [
          view=DHCPReservationCreateViewIPAddress.as_view(),
          name='dhcpreservation_create_ipaddress'),
     path(route='dhcp_server/<int:dhcp_server_id>/create',
-         view=DHCPReservationCreateView.as_view(),
+         view=DHCPReservationCreateViewDHCPServer.as_view(),
          name='dhcpreservation_create'),
     path(route='dhcp_reservation/<int:pk>/edit',
          view=DHCPReservationEditView.as_view(),

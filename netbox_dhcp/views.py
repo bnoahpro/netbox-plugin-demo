@@ -3,7 +3,7 @@ from ipaddress import ip_address
 from requests import get
 from netbox.views.generic import ObjectEditView, ObjectDeleteView, ObjectView, ObjectListView
 from ipam.models import IPAddress, Prefix
-from netbox_dhcp.forms import DHCPReservationEditForm, DHCPReservationEditFormIPAddress, DHCPServerEditForm
+from netbox_dhcp.forms import DHCPReservationEditForm, DHCPReservationEditFormIPAddress, DHCPServerEditForm, DHCPReservationEditFormDHCPServer
 from netbox_dhcp.models import DHCPReservation, DHCPServer
 from netbox_dhcp.background_tasks import create_or_update_reservation, delete_reservation, delete_reservation_in_dhcp
 from netbox_dhcp.tables import DHCPServerTable, DHCPReservationTable
@@ -33,10 +33,10 @@ class DHCPReservationCreateViewIPAddress(PermissionRequiredMixin, ObjectEditView
         return DHCPReservation(ip_address=ip_address)
 
 
-class DHCPReservationCreateView(PermissionRequiredMixin, ObjectEditView):
+class DHCPReservationCreateViewDHCPServer(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPReservation.objects.all()
-    form = DHCPReservationEditForm
+    form = DHCPReservationEditFormDHCPServer
 
     def get_object(self, *args, **kwargs):
         dhcp_server = get_object_or_404(DHCPServer, pk=kwargs['dhcp_server_id'])
@@ -45,20 +45,12 @@ class DHCPReservationCreateView(PermissionRequiredMixin, ObjectEditView):
 class DHCPReservationEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPReservation.objects.all()
-    form = DHCPReservationEditFormIPAddress
+    form = DHCPReservationEditForm
 
 
 class DHCPReservationDeleteView(PermissionRequiredMixin, ObjectDeleteView):
     permission_required = 'ipam.change_ipaddress'
     queryset = DHCPReservation.objects.all()
-
-    def delete(self, request, ip_address_id):
-        ip_address = get_object_or_404(IPAddress, pk=ip_address_id)
-        if hasattr(ip_address, 'dhcp_reservation') and ip_address.dhcp_reservation.is_reserved:
-            delete_reservation.delay(
-                ip_address=ip_address
-            )
-        return redirect(ip_address.get_absolute_url())
 
     def get_return_url(self, request, obj=None):
         if obj and obj.ip_address:
@@ -69,12 +61,12 @@ class DHCPReservationDeleteView(PermissionRequiredMixin, ObjectDeleteView):
 class DHCPReservationRecreateView(PermissionRequiredMixin, View):
     permission_required = 'ipam.change_ipaddress'
 
-    def post(self, request, ip_address_id):
-        ip_address = get_object_or_404(IPAddress, pk=ip_address_id)
-        create_or_update_reservation.delay(
-            ip_address=ip_address
-        )
-        return redirect(ip_address.get_absolute_url())
+    # def post(self, request, ip_address_id):
+    #     ip_address = get_object_or_404(IPAddress, pk=ip_address_id)
+    #     create_or_update_reservation.delay(
+    #         ip_address=ip_address
+    #     )
+    #     return redirect(ip_address.get_absolute_url())
 
 
 # ---------------------------- #

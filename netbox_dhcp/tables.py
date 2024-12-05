@@ -1,13 +1,11 @@
-import django_tables2 as tables
+from django_tables2 import LinkColumn
 
 from netbox.tables import NetBoxTable
 from netbox_dhcp.models import DHCPServer, DHCPReservation
 
 
 class DHCPServerTable(NetBoxTable):
-    name = tables.Column(
-        linkify=True
-    )
+    name = LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = DHCPServer
@@ -15,9 +13,7 @@ class DHCPServerTable(NetBoxTable):
 
 
 class DHCPReservationTable(NetBoxTable):
-    ip_address = tables.Column(
-        linkify=True
-    )
+    ip_address = LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = DHCPReservation

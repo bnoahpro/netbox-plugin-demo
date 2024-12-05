@@ -13,7 +13,6 @@ def trigger_create_or_update_reservation(instance: DHCPReservation, **_kwargs):
 
 @receiver(post_delete, sender=DHCPReservation)
 def trigger_delete_reservation(instance: DHCPReservation, **_kwargs):
-    if instance.status == 'active':
-        delete_reservation.delay(
-            dhcp_reservation=instance
-        )
+    delete_reservation.delay(
+        dhcp_reservation=instance
+    )
